@@ -1,0 +1,67 @@
+name: 监控Twitter推文
+on:
+  schedule:
+    - cron: '*/15 * * * *' # 每15分钟运行一次，你可以改成其他频率
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install feedparser python-telegram-bot[asyncio]
+      - name: Run monitor script
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          cat > monitor.py << 'EOF'
+          import feedparser
+          import asyncio
+          from telegram import Bot
+          import os
+
+          # 配置
+          BOT_TOKEN = os.getenv("BOT_TOKEN")
+          CHAT_ID = os.getenv("CHAT_ID")
+          NITTER_RSS = "https://nitter.net/elonmusk/rss" # 改成你要监控的Twitter账号的RSS
+          LAST_ID_FILE = "last_tweet_id.txt"
+
+          async def main():
+              # 读取上次的推文ID
+              last_id = ""
+              try:
+                  with open(LAST_ID_FILE, "r") as f:
+                      last_id = f.read().strip()
+              except:
+                  pass
+
+              # 拉取RSS
+              feed = feedparser.parse(NITTER_RSS)
+              if not feed.entries:
+                  return
+
+              latest = feed.entries[0]
+              latest_id = latest.id
+
+              if latest_id != last_id:
+                  # 有新推文，发送
+                  bot = Bot(token=BOT_TOKEN)
+                  text = f"🔔 新推文：\n{latest.title}\n\n链接：{latest.link}"
+                  await bot.send_message(chat_id=CHAT_ID, text=text, disable_web_page_preview=False)
+                  # 保存新的ID
+                  with open(LAST_ID_FILE, "w") as f:
+                      f.write(latest_id)
+
+          if __name__ == "__main__":
+              asyncio.run(main())
+          EOF
+          python monitor.py
