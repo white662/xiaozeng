@@ -7,6 +7,9 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # 加这个环境变量，强制用Node.js 24运行，消除警告
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,7 +23,7 @@ jobs:
           pip install feedparser python-telegram-bot[asyncio]
       - name: Run monitor script
         env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TTELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           cat > monitor.py << 'EOF'
@@ -32,7 +35,7 @@ jobs:
           # 配置
           BOT_TOKEN = os.getenv("BOT_TOKEN")
           CHAT_ID = os.getenv("CHAT_ID")
-          NITTER_RSS = "https://twiiit.com/elonmusk/rss" # 改成你要监控的Twitter账号的RSS
+          NITTER_RSS = "https://nitter.net/elonmusk/rss" # 改成你要监控的Twitter账号的RSS
           LAST_ID_FILE = "last_tweet_id.txt"
 
           async def main():
