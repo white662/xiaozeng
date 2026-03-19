@@ -1,7 +1,7 @@
 name: 监控Twitter推文
 on:
   schedule:
-    - cron: '*/15 * * * *' # 每15分钟运行一次，你可以改成其他频率
+    - cron: '*/5 * * * *' # 每5分钟运行一次，你可以改成其他频率
   workflow_dispatch:
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
           # 配置
           BOT_TOKEN = os.getenv("BOT_TOKEN")
           CHAT_ID = os.getenv("CHAT_ID")
-          NITTER_RSS = "https://nitter.net/elonmusk/rss" # 改成你要监控的Twitter账号的RSS
+          NITTER_RSS = "https://twiiit.com/elonmusk/rss" # 改成你要监控的Twitter账号的RSS
           LAST_ID_FILE = "last_tweet_id.txt"
 
           async def main():
